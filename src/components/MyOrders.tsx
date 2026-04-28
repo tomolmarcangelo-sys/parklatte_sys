@@ -1,6 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { collection, onSnapshot, query, where, updateDoc, doc, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { Order } from '../types';
 import { useAuth } from '../hooks/use-auth';
 import { useCart } from '../hooks/use-cart';
@@ -8,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Coffee, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
+import { Clock, Coffee, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { apiFetch } from '../lib/api';
+import { socket } from '../lib/socket';
 
 export default function MyOrders() {
   const { user } = useAuth();
@@ -20,48 +20,47 @@ export default function MyOrders() {
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [showFullHistory, setShowFullHistory] = useState(false);
   const [localProducts, setLocalProducts] = useState<any[]>([]);
-  const lastStatusesRef = useRef<Record<string, string>>({});
 
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setLocalProducts(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
-    });
-    return () => unsub();
-  }, []);
+  const fetchUserOrders = async () => {
+    try {
+      const data = await apiFetch('/api/orders');
+      setAllUserOrders(data);
+    } catch (err) {
+      console.error('Error fetching user orders:', err);
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
+      const data = await apiFetch('/api/menu');
+      setLocalProducts(data);
+    } catch (err) {
+      console.error('Error fetching menu items:', err);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
+    
+    fetchUserOrders();
+    fetchItems();
 
-    const q = query(
-      collection(db, 'orders'), 
-      where('customerId', '==', user.uid),
-      orderBy('timestamp', 'desc')
-    );
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      const newOrders = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Order));
+    const handleStatusUpdate = (data: { id: string, status: string }) => {
+      setAllUserOrders(prev => prev.map(o => o.id === data.id ? { ...o, status: data.status as any } : o));
       
-      // Check for status changes to notify user
-      newOrders.forEach(order => {
-        const prevStatus = lastStatusesRef.current[order.id];
-        if (prevStatus && prevStatus !== order.status) {
-          if (order.status === 'Preparing') {
-            toast.info(`Tactical Update: Order #PL-${order.id.slice(-4).toUpperCase()} is now being prepared.`);
-          } else if (order.status === 'Completed') {
-            toast.success(`Extraction Ready: Order #PL-${order.id.slice(-4).toUpperCase()} is ready for pickup!`, {
-              duration: 10000,
-            });
-          } else if (order.status === 'Cancelled') {
-            toast.error(`Mission Aborted: Order #PL-${order.id.slice(-4).toUpperCase()} has been cancelled.`);
-          }
-        }
-        lastStatusesRef.current[order.id] = order.status;
-      });
+      if (data.status === 'Preparing') {
+        toast.info(`Tactical Update: Order #${data.id.slice(-4).toUpperCase()} is now being prepared.`);
+      } else if (data.status === 'Completed') {
+        toast.success(`Extraction Ready: Order #${data.id.slice(-4).toUpperCase()} is ready for pickup!`);
+      }
+    };
 
-      setAllUserOrders(newOrders);
-    });
+    socket.emit('join-room', user.uid);
+    socket.on('status-updated', handleStatusUpdate);
 
-    return () => unsub();
+    return () => {
+      socket.off('status-updated', handleStatusUpdate);
+    };
   }, [user]);
 
   const activeOrders = allUserOrders.filter(o => ['Pending', 'Preparing', 'Completed'].includes(o.status));
@@ -69,7 +68,11 @@ export default function MyOrders() {
 
   const cancelOrder = async (orderId: string) => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status: 'Cancelled' });
+      await apiFetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'Cancelled' })
+      });
+      setAllUserOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
       toast.success('Mission aborted successfully.');
     } catch (error) {
       toast.error('Failed to abort mission.');
@@ -107,7 +110,6 @@ export default function MyOrders() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Active Deployments */}
         <div className="lg:col-span-5 space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-orange-400 rounded-full" />
@@ -186,7 +188,6 @@ export default function MyOrders() {
           </div>
         </div>
 
-        {/* Mission Archives */}
         <div className="lg:col-span-7 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -249,7 +250,6 @@ export default function MyOrders() {
         </div>
       </div>
 
-      {/* Order Reciept Modal */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
         <DialogContent className="max-w-md bg-white border-none rounded-[2.5rem] overflow-hidden p-0">
           {viewingOrder && (

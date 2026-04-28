@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/use-auth';
-import { db } from '../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, Shield, Mail, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { sanitize } from '@/lib/utils';
+import { apiFetch } from '../lib/api';
 
 export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
@@ -37,11 +35,15 @@ export default function ProfilePage() {
         updates.role = role;
       }
       
-      await updateDoc(doc(db, 'users', user.uid), sanitize(updates));
+      await apiFetch('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(updates)
+      });
+      
       toast.success('Profile updated successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to update profile.');
+      toast.error(error.message || 'Failed to update profile.');
     } finally {
       setIsSaving(false);
     }

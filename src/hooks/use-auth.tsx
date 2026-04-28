@@ -1,24 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  onAuthStateChanged, 
-  User, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
-import { UserProfile, UserRole } from '../types';
-import { sanitize } from '@/lib/utils';
+import { UserProfile } from '../types';
 
 interface AuthContextType {
-  user: User | null;
+  user: any | null; // Simulating the Firebase User object
   profile: UserProfile | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: () => Promise<void>; // Google login not supported locally without extra setup
   emailSignIn: (email: string, pass: string) => Promise<void>;
   emailSignUp: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -27,83 +14,82 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        setUser(user);
-        if (user) {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          const isAdminEmail = user.email?.toLowerCase() === 'tomolmarcangelo@gmail.com';
-          
-          if (userDoc.exists()) {
-            const currentProfile = userDoc.data() as UserProfile;
-            
-            // Force admin role for the designated test email (case-insensitive)
-            if (isAdminEmail && currentProfile.role !== 'Admin') {
-              const updatedProfile = sanitize({ ...currentProfile, role: 'Admin' as UserRole });
-              await setDoc(doc(db, 'users', user.uid), updatedProfile);
-              setProfile(updatedProfile);
-            } else {
-              setProfile(currentProfile);
-            }
-          } else {
-            // New user setup
-            const newProfile: UserProfile = sanitize({
-              uid: user.uid,
-              name: user.displayName || 'Guest',
-              email: user.email || '',
-              role: isAdminEmail ? 'Admin' : 'Customer'
-            });
-            await setDoc(doc(db, 'users', user.uid), newProfile);
-            setProfile(newProfile);
-          }
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error('Error in onAuthStateChanged:', error);
-      } finally {
-        setLoading(false);
+  const fetchProfile = async (token: string) => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        setUser({ uid: data.id, email: data.email });
+      } else {
+        localStorage.removeItem('token');
       }
-    }, (error) => {
-      console.error('onAuthStateChanged error:', error);
+    } catch (err) {
+      console.error('Fetch profile error:', err);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return unsubscribe;
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchProfile(token);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const login = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    alert('Google login is not implemented in the local MySQL version. Please use email/password.');
   };
 
   const emailSignIn = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Login failed');
+    }
+    
+    const { token, user: userData } = await res.json();
+    localStorage.setItem('token', token);
+    setProfile(userData);
+    setUser({ uid: userData.id, email: userData.email });
   };
 
   const emailSignUp = async (email: string, pass: string, name: string) => {
-    const { user } = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(user, { displayName: name });
-    
-    // Explicitly create the profile to ensure the name is set correctly from the start
-    const isAdminEmail = email.toLowerCase() === 'tomolmarcangelo@gmail.com';
-    const newProfile: UserProfile = sanitize({
-      uid: user.uid,
-      name: name,
-      email: email,
-      role: isAdminEmail ? 'Admin' : 'Customer'
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password: pass })
     });
-    await setDoc(doc(db, 'users', user.uid), newProfile);
-    setProfile(newProfile);
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Registration failed');
+    }
+    
+    const { token, user: userData } = await res.json();
+    localStorage.setItem('token', token);
+    setProfile(userData);
+    setUser({ uid: userData.id, email: userData.email });
   };
 
   const logout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('token');
+    setUser(null);
+    setProfile(null);
   };
 
   return (

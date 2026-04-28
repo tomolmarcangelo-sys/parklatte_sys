@@ -1,46 +1,72 @@
-import { db } from './src/lib/firebase';
-import { collection, addDoc, getDocs, writeBatch, doc } from 'firebase/firestore';
-import { sanitize } from './src/lib/utils';
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
+
+dotenv.config();
+
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'coffee_shop',
+};
 
 const products = [
-  { name: 'Caffe Latte', price: 4.50, category: 'Coffee', available: true },
-  { name: 'Cappuccino', price: 4.25, category: 'Coffee', available: true },
-  { name: 'Americano', price: 3.50, category: 'Coffee', available: true },
-  { name: 'Matcha Latte', price: 5.25, category: 'Tea', available: true },
-  { name: 'Cold Brew', price: 4.00, category: 'Coffee', available: true },
-  { name: 'Caramel Macchiato', price: 5.50, category: 'Coffee', available: true },
+  { id: uuidv4(), name: 'Caffe Latte', price: 150.00, category: 'Coffee', available: true },
+  { id: uuidv4(), name: 'Cappuccino', price: 150.00, category: 'Coffee', available: true },
+  { id: uuidv4(), name: 'Americano', price: 120.00, category: 'Coffee', available: true },
+  { id: uuidv4(), name: 'Matcha Latte', price: 180.00, category: 'Tea', available: true },
+  { id: uuidv4(), name: 'Cold Brew', price: 140.00, category: 'Coffee', available: true },
+  { id: uuidv4(), name: 'Caramel Macchiato', price: 170.00, category: 'Coffee', available: true },
 ];
 
 const customizations = [
-  { name: 'Oat Milk', additionalPrice: 0.80, stockLevel: 20, threshold: 5 },
-  { name: 'Almond Milk', additionalPrice: 0.80, stockLevel: 15, threshold: 5 },
-  { name: 'Extra Shot', additionalPrice: 1.00, stockLevel: 100, threshold: 20 },
-  { name: 'Vanilla Syrup', additionalPrice: 0.50, stockLevel: 4, threshold: 10 },
-  { name: 'Caramel Drizzle', additionalPrice: 0.50, stockLevel: 8, threshold: 10 },
+  { id: uuidv4(), name: 'Oat Milk', additionalPrice: 40.00, stockLevel: 20, threshold: 5 },
+  { id: uuidv4(), name: 'Almond Milk', additionalPrice: 40.00, stockLevel: 15, threshold: 5 },
+  { id: uuidv4(), name: 'Extra Shot', additionalPrice: 30.00, stockLevel: 100, threshold: 20 },
+  { id: uuidv4(), name: 'Vanilla Syrup', additionalPrice: 20.00, stockLevel: 80, threshold: 10 },
+  { id: uuidv4(), name: 'Caramel Drizzle', additionalPrice: 20.00, stockLevel: 80, threshold: 10 },
 ];
 
 async function seed() {
-  console.log('Seeding data...');
-  
-  // Products
-  const productSnap = await getDocs(collection(db, 'products'));
-  if (productSnap.empty) {
-    for (const p of products) {
-      await addDoc(collection(db, 'products'), sanitize(p));
-    }
-    console.log('Products seeded');
-  }
+  console.log('Seeding MySQL data...');
+  const connection = await mysql.createConnection(dbConfig);
 
-  // Customizations
-  const customSnap = await getDocs(collection(db, 'customizations'));
-  if (customSnap.empty) {
-    for (const c of customizations) {
-      await addDoc(collection(db, 'customizations'), sanitize(c));
+  try {
+    // Products
+    const [rows]: any = await connection.execute('SELECT COUNT(*) as count FROM menu_items');
+    if (rows[0].count === 0) {
+      for (const p of products) {
+        await connection.execute(
+          'INSERT INTO menu_items (id, name, price, category, available) VALUES (?, ?, ?, ?, ?)',
+          [p.id, p.name, p.price, p.category, p.available]
+        );
+      }
+      console.log('Products seeded');
+    } else {
+      console.log('Products table not empty, skipping.');
     }
-    console.log('Customizations seeded');
-  }
 
-  console.log('Seeding complete');
+    // Customizations
+    const [crows]: any = await connection.execute('SELECT COUNT(*) as count FROM customization_options');
+    if (crows[0].count === 0) {
+      for (const c of customizations) {
+        await connection.execute(
+          'INSERT INTO customization_options (id, name, additionalPrice, stockLevel, threshold) VALUES (?, ?, ?, ?, ?)',
+          [c.id, c.name, c.additionalPrice, c.stockLevel, c.threshold]
+        );
+      }
+      console.log('Customizations seeded');
+    } else {
+      console.log('Customizations table not empty, skipping.');
+    }
+
+    console.log('Seeding complete');
+  } catch (error) {
+    console.error('Seeding error:', error);
+  } finally {
+    await connection.end();
+  }
 }
 
 seed().catch(console.error);

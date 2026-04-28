@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { useCart } from '../hooks/use-cart';
 import { useAuth } from '../hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -9,7 +7,7 @@ import { ShoppingBag, ArrowRight, Minus } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../lib/socket';
-import { sanitize } from '@/lib/utils';
+import { apiFetch } from '../lib/api';
 
 export default function CartDialog() {
   const { items, removeItem, clearCart, total, showCart, setShowCart } = useCart();
@@ -18,7 +16,7 @@ export default function CartDialog() {
 
   const placeOrder = async () => {
     if (!user) {
-      login();
+      alert('Please log in to place an order.');
       return;
     }
 
@@ -29,23 +27,29 @@ export default function CartDialog() {
       const orderData = {
         customerId: user.uid,
         customerName: profile?.name || 'Guest',
-        status: 'Pending',
         totalPrice: total,
-        timestamp: new Date().toISOString(),
-        items: items
+        items: items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          customizations: item.customizations.map(c => ({ name: c.name, price: c.price }))
+        }))
       };
 
-      const sanitizedOrderData = sanitize(orderData);
-      const docRef = await addDoc(collection(db, 'orders'), sanitizedOrderData);
+      const newOrder = await apiFetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify(orderData)
+      });
       
-      socket.emit('new-order', { id: docRef.id, ...sanitizedOrderData });
+      // Socket notification is already handled in server.ts, but we check if we need redundancy
+      // socket.emit('new-order', newOrder); 
       
       clearCart();
       setShowCart(false);
       toast.success('Order placed successfully! Mission in progress.');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to place order.');
+      toast.error(error.message || 'Failed to place order.');
     } finally {
       setIsOrdering(false);
     }
@@ -53,7 +57,6 @@ export default function CartDialog() {
 
   return (
     <>
-      {/* Floating Button for Menu Page or wherever items > 0 */}
       <AnimatePresence>
         {items.length > 0 && (
           <motion.div 

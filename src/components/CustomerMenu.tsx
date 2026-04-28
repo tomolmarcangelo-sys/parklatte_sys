@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { MenuItem, CustomizationOption } from '../types';
 import { useCart } from '../hooks/use-cart';
 import { useAuth } from '../hooks/use-auth';
@@ -13,7 +11,8 @@ import { ShoppingBag, ArrowRight, Coffee, Search, Settings, Minus } from 'lucide
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../lib/socket';
-import { cn, sanitize } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { apiFetch } from '../lib/api';
 
 export default function CustomerMenu() {
   const [products, setProducts] = useState<MenuItem[]>([]);
@@ -26,16 +25,23 @@ export default function CustomerMenu() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as MenuItem)));
-    });
-    const unsubCustoms = onSnapshot(collection(db, 'customizations'), (snapshot) => {
-      setCustoms(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as CustomizationOption)));
-    });
+    const fetchData = async () => {
+      try {
+        const productData = await apiFetch('/api/menu');
+        const customData = await apiFetch('/api/customizations');
+        setProducts(productData);
+        setCustoms(customData);
+      } catch (err) {
+        console.error('Error fetching menu:', err);
+      }
+    };
 
+    fetchData();
+    
+    // Listen for menu updates via socket if needed
+    socket.on('menu-updated', fetchData);
     return () => {
-      unsubProducts();
-      unsubCustoms();
+      socket.off('menu-updated');
     };
   }, []);
 
@@ -74,10 +80,10 @@ export default function CustomerMenu() {
         </div>
         <div className="relative w-full lg:w-96 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={20} />
-          <Input 
+          <input 
             type="text" 
             placeholder="What's your fuel today?" 
-            className="pl-12 h-14 bg-white border-slate-200 rounded-2xl focus:ring-slate-950 focus:border-slate-950 transition-all text-base shadow-sm"
+            className="pl-12 h-14 w-full bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-950 focus:border-slate-950 transition-all text-base shadow-sm outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -144,7 +150,7 @@ export default function CustomerMenu() {
                     />
                     <div className="absolute top-3 right-3 text-right">
                       <Badge className="bg-white/90 backdrop-blur text-slate-900 border-none px-3 font-bold block mb-1">
-                        ₱{product.price.toFixed(2)}
+                        ₱{product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </Badge>
                       {!product.available && (
                         <Badge variant="destructive" className="font-black uppercase tracking-widest text-[9px]">
@@ -178,7 +184,6 @@ export default function CustomerMenu() {
         <DialogContent className="bg-white border-none sm:max-w-[500px] p-0 overflow-hidden rounded-3xl">
           {selectedProduct && (
               <div className="flex flex-col max-h-[85vh]">
-                {/* Header - Fixed */}
                 <div className="aspect-video relative overflow-hidden shrink-0">
                   <img 
                     src={selectedProduct.imageUrl || `https://picsum.photos/seed/${selectedProduct.name}/800/600`}
@@ -195,11 +200,10 @@ export default function CustomerMenu() {
                   </div>
                 </div>
 
-                {/* Body - Scrollable */}
-                <div className="p-8 pb-0 overflow-y-auto custom-scrollbar">
+                <div className="p-8 pb-0 overflow-y-auto">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Settings size={14} />
+                       <Settings size={14} />
                       <span className="text-[10px] font-black uppercase tracking-[0.2em]">Personalize</span>
                     </div>
                     <div className="grid grid-cols-1 gap-3">
@@ -225,7 +229,7 @@ export default function CustomerMenu() {
                             )}
                           >
                             <div>
-                              <p className="font-bold text-sm tracking-tight">{option.name}</p>
+                               <p className="font-bold text-sm tracking-tight">{option.name}</p>
                               {!isAvailable && <p className="text-[10px] font-black text-red-500 uppercase mt-0.5">Sold Out</p>}
                             </div>
                             <span className={cn(
@@ -241,12 +245,11 @@ export default function CustomerMenu() {
                   </div>
                 </div>
 
-                {/* Footer - Fixed/Sticky */}
                 <div className="p-8 shrink-0">
                   <Button 
                     className={cn(
                       "w-full h-14 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 transition-all",
-                      selectedProduct.available ? "bg-slate-950 hover:bg-slate-800 text-white hover:scale-[1.01]" : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      selectedProduct.available ? "bg-slate-950 hover:bg-slate-800 text-white" : "bg-slate-100 text-slate-400 cursor-not-allowed"
                     )}
                     disabled={!selectedProduct.available}
                     onClick={handleAddToCart}

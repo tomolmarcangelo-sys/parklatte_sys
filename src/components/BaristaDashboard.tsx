@@ -1,68 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, updateDoc, doc, orderBy, increment } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { Order, OrderStatus } from '../types';
 import { useAuth } from '../hooks/use-auth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Coffee, Play, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { socket } from '../lib/socket';
 import { cn } from '@/lib/utils';
+import { apiFetch } from '../lib/api';
 
 export default function BaristaDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
-
   const { profile, loading: authLoading } = useAuth();
+
+  const fetchOrders = async () => {
+    try {
+      const data = await apiFetch('/api/orders');
+      setOrders(data);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  };
 
   useEffect(() => {
     if (authLoading || !profile || (profile.role !== 'Barista' && profile.role !== 'Admin')) return;
 
-    const q = query(collection(db, 'orders'), orderBy('timestamp', 'desc'));
-    const unsub = onSnapshot(q, (snapshot) => {
-      setOrders(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Order)));
-    }, (error) => {
-      console.error("Firestore snapshot error:", error);
-    });
+    fetchOrders();
 
     socket.emit('join-room', 'baristas');
-    socket.on('order-received', (order) => {
+    
+    const handleNewOrder = (order: any) => {
       toast.info(`New Order from ${order.customerName}!`);
-    });
+      // Update local state by adding the new order or refetching
+      setOrders(prev => [order, ...prev]);
+    };
+
+    socket.on('order-received', handleNewOrder);
 
     return () => {
-      unsub();
-      socket.off('order-received');
+      socket.off('order-received', handleNewOrder);
     };
   }, [profile, authLoading]);
 
   const updateStatus = async (orderId: string, customerId: string, newStatus: OrderStatus) => {
     try {
-      const orderRef = doc(db, 'orders', orderId);
-      const order = orders.find(o => o.id === orderId);
-      
-      // Update the main order status
-      await updateDoc(orderRef, { status: newStatus });
-      
-      // If moving to 'Preparing', deduct from ingredient stock levels
-      if (newStatus === 'Preparing' && order) {
-        for (const item of order.items) {
-          if (item.customizationIds && item.customizationIds.length > 0) {
-            for (const customId of item.customizationIds) {
-              const customRef = doc(db, 'customizations', customId);
-              await updateDoc(customRef, { 
-                stockLevel: increment(-1) 
-              });
-            }
-          }
-        }
-        toast.info(`Ingredients deducted for Order #PL-${order.id.slice(-4).toUpperCase()}`);
-      }
+      await apiFetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus })
+      });
 
-      socket.emit('order-status-changed', { orderId, customerId, status: newStatus });
+      // Update local state immediately for better UX
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      
       toast.success(`Order status updated to: ${newStatus}`);
     } catch (error) {
       console.error("Status update error:", error);
@@ -75,7 +65,8 @@ export default function BaristaDashboard() {
   const completed = orders.filter(o => o.status === 'Completed');
 
   return (
-    <div className="grid grid-cols-3 gap-6 h-full min-h-[600px]">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-[600px]">
+      {/* Column rendering matches original logic */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Orders ({pending.length})</span>
@@ -213,4 +204,3 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
     </motion.div>
   );
 }
-
