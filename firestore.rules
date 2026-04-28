@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && getUserData().role == role;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == userId || hasRole('Admin'));
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if hasRole('Admin');
+    }
+
+    match /customizations/{customId} {
+      allow read: if true;
+      allow write: if hasRole('Admin') || hasRole('Barista');
+    }
+
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.customerId == request.auth.uid || hasRole('Barista') || hasRole('Admin'));
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (hasRole('Barista') || hasRole('Admin'));
+      allow delete: if isSignedIn() && (
+        (resource.data.customerId == request.auth.uid && resource.data.status == 'Pending') || 
+        hasRole('Admin')
+      );
+    }
+  }
+}

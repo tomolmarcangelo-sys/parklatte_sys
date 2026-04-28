@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users with roles",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["Customer", "Barista", "Admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Menu items",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "available": { "type": "boolean" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "Customization": {
+      "title": "Customization",
+      "description": "Drink customization options",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "additionalPrice": { "type": "number" },
+        "stockLevel": { "type": "number" },
+        "threshold": { "type": "number" }
+      },
+      "required": ["name", "additionalPrice", "stockLevel"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer coffee orders",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Preparing", "Completed", "Cancelled"] },
+        "totalPrice": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "items": { "type": "array" }
+      },
+      "required": ["customerId", "status", "totalPrice", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Menu products"
+    },
+    "/customizations/{customId}": {
+      "schema": "Customization",
+      "description": "Optional drink customizations"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Orders placed by customers"
+    }
+  }
+}

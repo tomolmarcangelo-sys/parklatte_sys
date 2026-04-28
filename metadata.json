@@ -1,0 +1,6 @@
+{
+  "name": "Parking Latte System",
+  "description": "A full-stack coffee ordering system with real-time order tracking, customization options, and inventory management for baristas and admins.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
