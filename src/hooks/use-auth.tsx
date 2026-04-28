@@ -2,10 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { UserProfile } from '../types';
 
 interface AuthContextType {
-  user: any | null; // Simulating the Firebase User object
+  user: any | null; 
   profile: UserProfile | null;
   loading: boolean;
-  login: () => Promise<void>; // Google login not supported locally without extra setup
+  googleLogin: (credential: string) => Promise<void>; 
   emailSignIn: (email: string, pass: string) => Promise<void>;
   emailSignUp: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -46,8 +46,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async () => {
-    alert('Google login is not implemented in the local MySQL version. Please use email/password.');
+  const googleLogin = async (credential: string) => {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Google login failed');
+    }
+    
+    const { token, user: userData } = await res.json();
+    localStorage.setItem('token', token);
+    setProfile(userData);
+    setUser({ uid: userData.id, email: userData.email });
   };
 
   const emailSignIn = async (email: string, pass: string) => {
@@ -93,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, emailSignIn, emailSignUp, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, googleLogin, emailSignIn, emailSignUp, logout }}>
       {children}
     </AuthContext.Provider>
   );

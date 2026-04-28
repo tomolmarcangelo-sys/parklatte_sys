@@ -9,10 +9,12 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from 'uuid';
+import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const googleClient = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 
 // Database Connection
 const dbConfig: any = {
@@ -102,6 +104,42 @@ async function startServer() {
 
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) return res.status(400).json({ error: "Invalid password" });
+
+      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
+      res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/auth/google", async (req, res) => {
+    const { credential } = req.body;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.VITE_GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload) throw new Error("Invalid Google token");
+
+      const { email, name, sub: googleId } = payload;
+
+      // Check if user exists
+      const [rows]: any = await pool.execute("SELECT * FROM users WHERE email = ?", [email]);
+      let user = rows[0];
+
+      if (!user) {
+        // Create user if not exists
+        const [userCount]: any = await pool.execute("SELECT COUNT(*) as count FROM users");
+        const role = userCount[0].count === 0 ? "Admin" : "Customer";
+        const id = Date.now().toString();
+        
+        await pool.execute(
+          "INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)",
+          [id, name, email, "GOOGLE_AUTH_" + googleId, role] // Placeholder password
+        );
+        user = { id, name, email, role };
+      }
 
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
       res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });

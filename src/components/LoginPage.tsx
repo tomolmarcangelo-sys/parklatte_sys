@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Coffee, LogIn, UserPlus, Mail, Lock, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
-  const { user, loading: authLoading, login, emailSignIn, emailSignUp } = useAuth();
+  const { user, loading: authLoading, googleLogin, emailSignIn, emailSignUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -59,25 +60,6 @@ export default function LoginPage() {
         message = error.message;
       }
       toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await login();
-      toast.success('Google authentication successful');
-    } catch (error: any) {
-      console.error(error);
-      if (error.code === 'auth/popup-closed-by-user') {
-        toast.error('Sign-in cancelled: Popup closed.');
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        // Ignore parallel popup requests
-      } else {
-        toast.error('Google sign-in failed. Please try again.');
-      }
     } finally {
       setLoading(false);
     }
@@ -195,16 +177,43 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button 
-              type="button"
-              variant="outline"
-              disabled={loading}
-              onClick={handleGoogleLogin}
-              className="w-full h-14 border-slate-200 hover:bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-3 text-base font-bold transition-all disabled:opacity-50"
-            >
-              <img src="https://www.google.com/favicon.ico" className="w-5 h-5 grayscale opacity-70 group-hover:opacity-100" />
-              Continue with Google
-            </Button>
+            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={credentialResponse => {
+                    if (credentialResponse.credential) {
+                      setLoading(true);
+                      googleLogin(credentialResponse.credential)
+                        .then(() => {
+                          toast.success('Google login successful');
+                        })
+                        .catch(err => {
+                          console.error(err);
+                          toast.error('Google login failed');
+                        })
+                        .finally(() => setLoading(false));
+                    }
+                  }}
+                  onError={() => {
+                    toast.error('Google login failed');
+                  }}
+                  useOneTap
+                  theme="outline"
+                  shape="pill"
+                  width="100%"
+                />
+              </div>
+            ) : (
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={() => toast.info('Please set VITE_GOOGLE_CLIENT_ID in the Settings menu to enable this feature.')}
+                className="w-full h-14 border-slate-200 hover:bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center gap-3 text-base font-bold transition-all"
+              >
+                <img src="https://www.google.com/favicon.ico" className="w-5 h-5 grayscale opacity-50" referrerPolicy="no-referrer" />
+                Configure Google Login
+              </Button>
+            )}
 
             <div className="mt-8 text-center">
               <button

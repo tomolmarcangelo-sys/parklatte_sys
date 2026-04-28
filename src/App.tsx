@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './hooks/use-auth';
 import { CartProvider } from './hooks/use-cart';
 import { Toaster } from 'sonner';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import CustomerMenu from './components/CustomerMenu';
 import BaristaDashboard from './components/BaristaDashboard';
 import AdminPanel from './components/AdminPanel';
@@ -70,7 +71,9 @@ const ConditionalLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function App() {
-  return (
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const content = (
     <AuthProvider>
       <CartProvider>
         <Router>
@@ -107,6 +110,16 @@ export default function App() {
         </Router>
       </CartProvider>
     </AuthProvider>
+  );
+
+  if (!clientId) {
+    return content;
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      {content}
+    </GoogleOAuthProvider>
   );
 }
 
