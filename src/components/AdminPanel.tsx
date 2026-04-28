@@ -225,40 +225,40 @@ export default function AdminPanel() {
       </header>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
         <Card className="bg-slate-950 text-white border-none shadow-2xl shadow-slate-950/20 rounded-[2.5rem] p-4">
           <CardHeader className="p-6">
              <span className="text-orange-400 uppercase text-[9px] font-black tracking-[0.3em] mb-2 block">Active Inventory</span>
-             <CardTitle className="text-5xl font-black italic tracking-tighter">{products.length}</CardTitle>
+             <CardTitle className="text-4xl md:text-5xl font-black italic tracking-tighter">{products.length}</CardTitle>
              <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">Ready for deployment</p>
           </CardHeader>
         </Card>
         <Card className="bg-card border-border shadow-xl rounded-[2.5rem] p-4">
           <CardHeader className="p-6">
              <span className="text-muted-foreground uppercase text-[9px] font-black tracking-[0.3em] mb-2 block">Operative Force</span>
-             <CardTitle className="text-5xl font-black italic tracking-tighter text-foreground">{users.length}</CardTitle>
+             <CardTitle className="text-4xl md:text-5xl font-black italic tracking-tighter text-foreground">{users.length}</CardTitle>
              <p className="text-muted-foreground text-[10px] font-bold uppercase mt-1">Authorized personnel</p>
           </CardHeader>
         </Card>
-        <Card className={cn("border-none shadow-xl rounded-[2.5rem] p-4", lowStock.length > 0 ? "bg-red-50" : "bg-green-50")}>
+        <Card className={cn("border-none shadow-xl rounded-[2.5rem] p-4 sm:col-span-2 lg:col-span-1", lowStock.length > 0 ? "bg-red-50" : "bg-green-50")}>
           <CardHeader className="p-6">
              <span className={cn("uppercase text-[9px] font-black tracking-[0.3em] mb-2 block", lowStock.length > 0 ? "text-red-400" : "text-green-400")}>Supply Chain</span>
-             <CardTitle className={cn("text-5xl font-black italic tracking-tighter", lowStock.length > 0 ? "text-red-600" : "text-green-600")}>
+             <CardTitle className={cn("text-4xl md:text-5xl font-black italic tracking-tighter", lowStock.length > 0 ? "text-red-600" : "text-green-600")}>
                {lowStock.length > 0 ? 'CRITICAL' : 'STABLE'}
              </CardTitle>
              <p className={cn("text-[10px] font-bold uppercase mt-1", lowStock.length > 0 ? "text-red-400" : "text-green-400")}>
-                {lowStock.length > 0 ? `${lowStock.length} assets below threshold` : 'All systems go'}
+                {lowStock.length > 0 ? `${lowStock.length} items low` : 'All systems go'}
              </p>
           </CardHeader>
         </Card>
       </div>
 
       <Tabs defaultValue="menu" className="w-full">
-        <TabsList className="bg-card p-2 rounded-2xl border border-border mb-8 h-auto flex flex-wrap lg:inline-flex shadow-sm gap-2">
-          <TabsTrigger value="menu" className="rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Menu Assets</TabsTrigger>
-          <TabsTrigger value="orders" className="rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Order Archives</TabsTrigger>
-          <TabsTrigger value="users" className="rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team Management</TabsTrigger>
-          <TabsTrigger value="inventory" className="rounded-xl px-6 py-3 text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Supply Intel</TabsTrigger>
+        <TabsList className="bg-card p-1 md:p-2 rounded-2xl border border-border mb-8 h-auto flex flex-wrap lg:inline-flex shadow-sm gap-1 md:gap-2">
+          <TabsTrigger value="menu" className="flex-1 lg:flex-none rounded-xl px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Menu</TabsTrigger>
+          <TabsTrigger value="orders" className="flex-1 lg:flex-none rounded-xl px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Orders</TabsTrigger>
+          <TabsTrigger value="users" className="flex-1 lg:flex-none rounded-xl px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
+          <TabsTrigger value="inventory" className="flex-1 lg:flex-none rounded-xl px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-xs font-black uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Supply</TabsTrigger>
         </TabsList>
 
         <TabsContent value="menu" className="space-y-8">

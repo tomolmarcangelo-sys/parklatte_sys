@@ -65,44 +65,58 @@ export default function BaristaDashboard() {
   const completed = orders.filter(o => o.status === 'Completed');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-[600px]">
-      {/* Column rendering matches original logic */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Orders ({pending.length})</span>
-          <div className="w-2 h-2 bg-muted-foreground rounded-full" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 pb-32 h-full">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between pb-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-4 bg-muted rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pending Deployment ({pending.length})</span>
+          </div>
+          <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
         </div>
         <div className="flex flex-col gap-4">
           <AnimatePresence>
-            {pending.map(order => (
+            {pending.length === 0 ? (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-10 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 rounded-2xl border border-dashed border-border">No pending ops</motion.p>
+            ) : pending.map(order => (
               <OrderCard key={order.id} order={order} onUpdate={updateStatus} />
             ))}
           </AnimatePresence>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preparing ({preparing.length})</span>
-          <div className="w-2 h-2 bg-orange-400 rounded-full" />
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between pb-3 border-b border-orange-400/30">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-4 bg-orange-400 rounded-full animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">In Extraction ({preparing.length})</span>
+          </div>
+          <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
         </div>
         <div className="flex flex-col gap-4">
           <AnimatePresence>
-            {preparing.map(order => (
+            {preparing.length === 0 ? (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-10 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 rounded-2xl border border-dashed border-border">No active units</motion.p>
+            ) : preparing.map(order => (
               <OrderCard key={order.id} order={order} onUpdate={updateStatus} />
             ))}
           </AnimatePresence>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ready for Pickup ({completed.length})</span>
+      <div className="flex flex-col gap-6 sm:col-span-2 lg:col-span-1">
+        <div className="flex items-center justify-between pb-3 border-b border-green-500/30">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-4 bg-green-500 rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Ready for Collection ({completed.length})</span>
+          </div>
           <div className="w-2 h-2 bg-green-500 rounded-full" />
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           <AnimatePresence>
-            {completed.map(order => (
+            {completed.length === 0 ? (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full text-center py-10 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 rounded-2xl border border-dashed border-border">Nothing to extract</motion.p>
+            ) : completed.map(order => (
               <OrderCard key={order.id} order={order} onUpdate={updateStatus} />
             ))}
           </AnimatePresence>
