@@ -103,26 +103,26 @@ export default function MyOrders() {
   return (
     <div className="max-w-5xl mx-auto space-y-12 pb-20">
       <div className="space-y-2">
-        <h1 className="text-4xl font-black italic tracking-tighter text-slate-950 uppercase leading-none">
+        <h1 className="text-4xl font-black italic tracking-tighter text-foreground uppercase leading-none">
           Mission <span className="text-orange-400">Control.</span>
         </h1>
-        <p className="text-slate-500 text-sm font-medium">Tracking your active deployments and historical archives.</p>
+        <p className="text-muted-foreground text-sm font-medium">Tracking your active deployments and historical archives.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-5 space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-orange-400 rounded-full" />
-            <h2 className="text-xl font-black uppercase tracking-tight italic text-slate-950">Active Ops</h2>
+            <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Active Ops</h2>
           </div>
 
           <div className="space-y-4">
             {activeOrders.length === 0 ? (
-              <div className="p-12 rounded-[2rem] bg-white border border-slate-100 flex flex-col items-center justify-center text-center space-y-4 border-dashed">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
+              <div className="p-12 rounded-[2rem] bg-card border border-border flex flex-col items-center justify-center text-center space-y-4 border-dashed">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center text-muted-foreground">
                   <Coffee size={32} />
                 </div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No active deployments</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">No active deployments</p>
               </div>
             ) : (
               <AnimatePresence>
@@ -191,15 +191,15 @@ export default function MyOrders() {
         <div className="lg:col-span-7 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-slate-200 rounded-full" />
-              <h2 className="text-xl font-black uppercase tracking-tight italic text-slate-950">Field Archives</h2>
+              <div className="w-1.5 h-6 bg-muted rounded-full" />
+              <h2 className="text-xl font-black uppercase tracking-tight italic text-foreground">Field Archives</h2>
             </div>
             {orderHistory.length > 5 && (
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setShowFullHistory(!showFullHistory)}
-                className="text-[10px] font-black text-slate-400 hover:text-slate-950 uppercase tracking-widest"
+                className="text-[10px] font-black text-muted-foreground hover:text-foreground uppercase tracking-widest"
               >
                 {showFullHistory ? 'Compact View' : `Expand History (${orderHistory.length})`}
               </Button>
@@ -210,27 +210,27 @@ export default function MyOrders() {
             {(showFullHistory ? orderHistory : orderHistory.slice(0, 6)).map(order => (
               <Card 
                 key={order.id} 
-                className="border border-slate-100 bg-white p-6 rounded-[2rem] hover:border-slate-300 transition-all cursor-pointer group shadow-sm hover:shadow-xl hover:shadow-slate-200/50"
+                className="border border-border bg-card p-6 rounded-[2rem] hover:border-primary/50 transition-all cursor-pointer group shadow-sm hover:shadow-xl hover:shadow-primary/10"
                 onClick={() => setViewingOrder(order)}
               >
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
-                      <span className="text-[9px] font-mono text-slate-400 uppercase">#PL-{order.id.slice(-4).toUpperCase()}</span>
-                      <p className="text-sm font-black text-slate-950 uppercase italic tracking-tighter">
+                      <span className="text-[9px] font-mono text-muted-foreground uppercase">#PL-{order.id.slice(-4).toUpperCase()}</span>
+                      <p className="text-sm font-black text-foreground uppercase italic tracking-tighter">
                         {new Date(order.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
                     <Badge className={cn(
                       "border-none text-[8px] font-black px-2 h-5 rounded-lg",
-                      order.status === 'PickedUp' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                      order.status === 'PickedUp' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
                     )}>
                       {order.status === 'PickedUp' ? 'EXTRACTED' : 'ABORTED'}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center justify-between pt-2">
-                    <p className="text-2xl font-black text-slate-950 italic tracking-tighter">₱{order.totalPrice.toFixed(2)}</p>
+                    <p className="text-2xl font-black text-foreground italic tracking-tighter">₱{order.totalPrice.toFixed(2)}</p>
                     <Button 
                       variant="ghost" 
                       size="icon"
@@ -238,7 +238,7 @@ export default function MyOrders() {
                         e.stopPropagation();
                         reorder(order);
                       }}
-                      className="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-950 hover:bg-slate-100 transition-colors"
+                      className="h-10 w-10 rounded-xl bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
                     >
                       <RotateCcw size={16} />
                     </Button>
@@ -251,7 +251,7 @@ export default function MyOrders() {
       </div>
 
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
-        <DialogContent className="max-w-md bg-white border-none rounded-[2.5rem] overflow-hidden p-0">
+        <DialogContent className="max-w-md bg-card border-none rounded-[2.5rem] overflow-hidden p-0">
           {viewingOrder && (
             <div className="flex flex-col">
               <div className="p-10 bg-slate-950 text-white shrink-0">
@@ -273,35 +273,35 @@ export default function MyOrders() {
                 </div>
               </div>
 
-              <div className="p-10 overflow-y-auto max-h-[40vh] custom-scrollbar bg-white">
+              <div className="p-10 overflow-y-auto max-h-[40vh] custom-scrollbar bg-card">
                 <div className="space-y-6">
                   {viewingOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between gap-6 pb-6 border-b border-slate-50 last:border-0 last:pb-0">
+                    <div key={idx} className="flex justify-between gap-6 pb-6 border-b border-border last:border-0 last:pb-0">
                       <div className="space-y-2">
-                        <p className="font-black text-slate-950 uppercase tracking-tight text-sm italic">{item.name}</p>
+                        <p className="font-black text-foreground uppercase tracking-tight text-sm italic">{item.name}</p>
                         {item.customizations && item.customizations.length > 0 && (
                           <div className="flex flex-wrap gap-2">
                             {item.customizations.map((c, cidx) => (
-                              <Badge key={cidx} className="bg-slate-50 text-slate-400 border-none text-[8px] font-black uppercase tracking-widest px-2 py-0.5">
+                              <Badge key={cidx} className="bg-muted text-muted-foreground border-none text-[8px] font-black uppercase tracking-widest px-2 py-0.5">
                                 + {c.name}
                               </Badge>
                             ))}
                           </div>
                         )}
                       </div>
-                      <span className="font-black text-slate-950 shrink-0 text-sm italic">₱{item.price.toFixed(2)}</span>
+                      <span className="font-black text-foreground shrink-0 text-sm italic">₱{item.price.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-10 bg-slate-50 shrink-0 border-t border-slate-100">
+              <div className="p-10 bg-muted shrink-0 border-t border-border">
                 <div className="flex justify-between items-end mb-8">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Total Deployment Cost</span>
-                  <span className="text-4xl font-black italic tracking-tighter text-slate-950">₱{viewingOrder.totalPrice.toFixed(2)}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Total Deployment Cost</span>
+                  <span className="text-4xl font-black italic tracking-tighter text-foreground">₱{viewingOrder.totalPrice.toFixed(2)}</span>
                 </div>
                 <Button 
-                  className="w-full h-16 bg-slate-950 hover:bg-slate-800 text-white rounded-[1.25rem] text-lg font-black italic tracking-tighter uppercase flex items-center justify-center gap-3 transition-all shadow-xl shadow-slate-950/20"
+                  className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[1.25rem] text-lg font-black italic tracking-tighter uppercase flex items-center justify-center gap-3 transition-all shadow-xl shadow-primary/20"
                   onClick={() => {
                     reorder(viewingOrder);
                     setViewingOrder(null);

@@ -66,8 +66,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 bg-[grid-slate-100] [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-from)_0%,_transparent_25%),_radial-gradient(circle_at_bottom_left,_var(--tw-gradient-from)_0%,_transparent_25%)] from-orange-100 opacity-50" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 bg-[grid-muted/20] [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-from)_0%,_transparent_25%),_radial-gradient(circle_at_bottom_left,_var(--tw-gradient-from)_0%,_transparent_25%)] from-primary/10 opacity-50" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -75,20 +75,20 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-lg"
       >
-        <Card className="border-none shadow-premium rounded-3xl overflow-hidden bg-white/90 backdrop-blur-md">
+        <Card className="border-none shadow-premium rounded-3xl overflow-hidden bg-card/90 backdrop-blur-md">
           <div className="h-2 bg-gradient-to-r from-orange-400 to-amber-500" />
           
           <CardHeader className="pt-10 pb-6 text-center">
             <motion.div 
               layout
-              className="mx-auto w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center text-orange-400 shadow-xl mb-6"
+              className="mx-auto w-16 h-16 bg-slate-950 dark:bg-primary rounded-2xl flex items-center justify-center text-orange-400 dark:text-primary-foreground shadow-xl mb-6"
             >
               <Coffee size={32} />
             </motion.div>
-            <CardTitle className="text-3xl font-black italic text-slate-950 tracking-tighter uppercase">
+            <CardTitle className="text-3xl font-black italic text-foreground tracking-tighter uppercase">
               {isSignUp ? "Join the Team" : "Welcome Back"}
             </CardTitle>
-            <CardDescription className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-[0.3em] mt-2">
               Champion's Brew Performance Hub
             </CardDescription>
           </CardHeader>
@@ -103,13 +103,13 @@ export default function LoginPage() {
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-2"
                   >
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Full Name</Label>
                     <div className="relative">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                       <Input
                         required
                         placeholder="John Doe"
-                        className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-100 focus:ring-slate-950 focus:border-slate-950 transition-all font-medium"
+                        className="pl-12 h-12 rounded-xl bg-muted border-border focus:ring-primary focus:border-primary transition-all font-medium text-foreground"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -119,14 +119,14 @@ export default function LoginPage() {
               </AnimatePresence>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Gmail Address</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Gmail Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input
                     required
                     type="email"
                     placeholder="name@gmail.com"
-                    className="pl-12 h-12 rounded-xl bg-slate-50 border-slate-100 focus:ring-slate-950 focus:border-slate-950 transition-all font-medium"
+                    className="pl-12 h-12 rounded-xl bg-muted border-border focus:ring-primary focus:border-primary transition-all font-medium text-foreground"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -134,21 +134,21 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Secret Key</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Secret Key</Label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input
                     required
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-12 pr-12 h-12 rounded-xl bg-slate-50 border-slate-100 focus:ring-slate-950 focus:border-slate-950 transition-all font-medium"
+                    className="pl-12 pr-12 h-12 rounded-xl bg-muted border-border focus:ring-primary focus:border-primary transition-all font-medium text-foreground"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-950 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -158,7 +158,7 @@ export default function LoginPage() {
               <Button 
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 bg-slate-950 hover:bg-slate-800 text-white rounded-2xl flex items-center justify-center gap-3 text-lg font-black italic tracking-tighter uppercase transition-all active:scale-[0.98] shadow-lg shadow-slate-950/20"
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl flex items-center justify-center gap-3 text-lg font-black italic tracking-tighter uppercase transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
               >
                 {loading ? "AUTHENTICATING..." : isSignUp ? (
                   <>Create Account <UserPlus size={20} className="text-orange-400" /></>
@@ -170,9 +170,9 @@ export default function LoginPage() {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
+                <div className="w-full border-t border-border"></div>
               </div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em] bg-white px-4 text-slate-300">
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em] bg-card px-4 text-muted-foreground">
                 OR Tactical Entry
               </div>
             </div>
@@ -197,10 +197,12 @@ export default function LoginPage() {
                   onError={() => {
                     toast.error('Google login failed');
                   }}
-                  useOneTap
+                  useOneTap={false}
+                  use_fedcm_for_prompt={false}
                   theme="outline"
                   shape="pill"
                   width="100%"
+                  itp_support={true}
                 />
               </div>
             ) : (
@@ -219,13 +221,13 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-950 transition-colors"
+                className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
               >
                 {isSignUp ? "Already a champion? Sign In" : "New operative? Create Account"}
               </button>
             </div>
 
-            <p className="text-[9px] text-slate-300 text-center mt-8 font-bold uppercase tracking-widest leading-loose">
+            <p className="text-[9px] text-muted-foreground text-center mt-8 font-bold uppercase tracking-widest leading-loose">
               By deploying, you agree to our <br /> protocols and performance standards.
             </p>
           </CardContent>

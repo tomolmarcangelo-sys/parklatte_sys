@@ -68,9 +68,9 @@ export default function BaristaDashboard() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-[600px]">
       {/* Column rendering matches original logic */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Orders ({pending.length})</span>
-          <div className="w-2 h-2 bg-slate-400 rounded-full" />
+        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Orders ({pending.length})</span>
+          <div className="w-2 h-2 bg-muted-foreground rounded-full" />
         </div>
         <div className="flex flex-col gap-4">
           <AnimatePresence>
@@ -82,8 +82,8 @@ export default function BaristaDashboard() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Preparing ({preparing.length})</span>
+        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Preparing ({preparing.length})</span>
           <div className="w-2 h-2 bg-orange-400 rounded-full" />
         </div>
         <div className="flex flex-col gap-4">
@@ -96,8 +96,8 @@ export default function BaristaDashboard() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Ready for Pickup ({completed.length})</span>
+        <div className="flex items-center justify-between pb-2 border-b-2 border-border">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ready for Pickup ({completed.length})</span>
           <div className="w-2 h-2 bg-green-500 rounded-full" />
         </div>
         <div className="flex flex-col gap-4">
@@ -128,16 +128,16 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "bg-white border p-5 rounded-2xl shadow-sm transition-all",
-        isPreparing ? "border-orange-400 bg-orange-50/30 ring-1 ring-orange-200" : "border-slate-200",
-        isReady && "border-green-400 bg-green-50/30"
+        "bg-card border p-5 rounded-2xl shadow-sm transition-all",
+        isPreparing ? "border-orange-400 bg-orange-400/10 ring-1 ring-orange-400/20" : "border-border",
+        isReady && "border-green-400 bg-green-400/10"
       )}
     >
       <div className="flex justify-between items-start mb-4">
-        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded border border-border">
           #PL-{order.id.slice(-4).toUpperCase()}
         </div>
-        <div className="flex items-center gap-1.5 text-slate-500">
+        <div className="flex items-center gap-1.5 text-muted-foreground">
           <Clock size={10} />
           <span className="text-[10px] font-bold">
             {Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 60000)}m
@@ -148,14 +148,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
       <div className="space-y-4">
         {order.items.map((item, idx) => (
           <div key={idx} className="group">
-            <div className="font-bold text-sm text-slate-950 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+            <div className="font-bold text-sm text-foreground flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               {item.name}
             </div>
             {item.customizations && item.customizations.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2 ml-3.5">
                 {item.customizations.map((c, cidx) => (
-                  <Badge key={cidx} variant="secondary" className="bg-slate-100/80 text-slate-500 border-none text-[9px] font-medium px-2 py-0">
+                  <Badge key={cidx} variant="secondary" className="bg-muted text-muted-foreground border-none text-[9px] font-medium px-2 py-0">
                     + {c.name}
                   </Badge>
                 ))}
@@ -165,16 +165,16 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
         ))}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-dashed border-slate-200 flex items-center justify-between">
+      <div className="mt-6 pt-4 border-t border-dashed border-border flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Deployment for</span>
-          <span className="text-[10px] font-bold text-slate-900 truncate max-w-[80px]">{order.customerName}</span>
+          <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest mb-0.5">Deployment for</span>
+          <span className="text-[10px] font-bold text-foreground truncate max-w-[80px]">{order.customerName}</span>
         </div>
 
         {order.status === 'Pending' && (
           <button 
             onClick={() => onUpdate(order.id, order.customerId, 'Preparing')}
-            className="text-[9px] h-9 px-4 rounded-xl font-black uppercase tracking-widest bg-slate-950 text-white hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg shadow-slate-950/20 active:scale-95"
+            className="text-[9px] h-9 px-4 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-95"
           >
             <Play size={10} fill="currentColor" />
             Start Preparing

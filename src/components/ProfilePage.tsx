@@ -65,50 +65,50 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="border-none shadow-premium rounded-3xl overflow-hidden bg-white">
+        <Card className="border-none shadow-premium rounded-3xl overflow-hidden bg-card">
           <div className="h-32 bg-slate-950 relative">
             <div className="absolute -bottom-12 left-10">
-              <div className="w-24 h-24 rounded-3xl bg-orange-400 border-4 border-slate-50 flex items-center justify-center text-slate-950 shadow-xl">
+              <div className="w-24 h-24 rounded-3xl bg-orange-400 border-4 border-card flex items-center justify-center text-slate-950 shadow-xl">
                 <User size={48} />
               </div>
             </div>
           </div>
           <CardHeader className="pt-16 pb-6 px-10">
-            <CardTitle className="text-3xl font-extrabold text-slate-950 tracking-tight">Your Profile</CardTitle>
-            <CardDescription className="text-slate-500 font-medium">
+            <CardTitle className="text-3xl font-extrabold text-foreground tracking-tight">Your Profile</CardTitle>
+            <CardDescription className="text-muted-foreground font-medium">
               Manage your personal information and preferences.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8 px-10 pb-10">
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
+                <Label className="text-xs font-black uppercase text-muted-foreground flex items-center gap-2">
                   <Mail size={12} /> Email Address
                 </Label>
-                <div className="flex items-center gap-3 px-4 h-12 bg-slate-50 border border-slate-100 rounded-xl text-slate-500 text-sm font-medium">
+                <div className="flex items-center gap-3 px-4 h-12 bg-muted border border-border rounded-xl text-muted-foreground text-sm font-medium">
                   {profile.email}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
+                <Label className="text-xs font-black uppercase text-muted-foreground flex items-center gap-2">
                   <User size={12} /> Display Name
                 </Label>
                 <Input 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="h-12 rounded-xl border-slate-200 focus:ring-orange-400"
+                  className="h-12 rounded-xl border-border bg-muted focus:ring-orange-400"
                 />
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="space-y-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
-                   <Label className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
+                   <Label className="text-xs font-black uppercase text-muted-foreground flex items-center gap-2">
                     <Shield size={12} /> Permission Level
                   </Label>
                   {!isAdmin && (
-                    <Badge variant="outline" className="bg-slate-50 text-slate-900 border-slate-200 font-bold px-3">
+                    <Badge variant="outline" className="bg-muted text-foreground border-border font-bold px-3">
                       {profile.role}
                     </Badge>
                   )}
@@ -116,17 +116,17 @@ export default function ProfilePage() {
 
                 {isAdmin ? (
                   <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white">
+                    <SelectTrigger className="h-12 rounded-xl border-border bg-muted text-foreground ring-offset-background">
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-none shadow-premium rounded-xl">
+                    <SelectContent className="bg-popover text-popover-foreground border border-border shadow-premium rounded-xl">
                       <SelectItem value="Customer">Customer</SelectItem>
                       <SelectItem value="Barista">Barista</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="text-xs text-slate-400 font-medium mt-1">
+                  <p className="text-xs text-muted-foreground font-medium mt-1">
                     Your role is managed by technical administrators. Contact support for elevation.
                   </p>
                 )}
@@ -136,7 +136,7 @@ export default function ProfilePage() {
             <Button 
               onClick={handleSave}
               disabled={isSaving || !name.trim()}
-              className="w-full h-14 bg-slate-950 hover:bg-slate-800 text-white rounded-2xl flex items-center justify-center gap-3 text-lg font-bold transition-all shadow-lg shadow-slate-950/10"
+              className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl flex items-center justify-center gap-3 text-lg font-bold transition-all shadow-lg shadow-primary/10"
             >
               {isSaving ? (
                 <>

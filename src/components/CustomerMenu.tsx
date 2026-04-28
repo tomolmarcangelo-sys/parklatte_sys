@@ -70,20 +70,20 @@ export default function CustomerMenu() {
       {/* Search & Hero Focus */}
       <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 py-8">
         <div className="space-y-3">
-          <h1 className="text-4xl md:text-6xl font-black text-slate-950 tracking-tighter leading-none italic">
+          <h1 className="text-4xl md:text-6xl font-black text-foreground tracking-tighter leading-none italic">
             CHAMPION'S <br />
             <span className="text-orange-400">BREW.</span>
           </h1>
-          <p className="text-slate-500 max-w-md text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground max-w-md text-sm font-medium leading-relaxed">
             Crafting pure performance in every cup. Artisanal coffee for those who never settle for second place.
           </p>
         </div>
         <div className="relative w-full lg:w-96 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors" size={20} />
           <input 
             type="text" 
             placeholder="What's your fuel today?" 
-            className="pl-12 h-14 w-full bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-slate-950 focus:border-slate-950 transition-all text-base shadow-sm outline-none"
+            className="pl-12 h-14 w-full bg-card border border-border rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-base shadow-sm outline-none text-foreground"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -98,7 +98,7 @@ export default function CustomerMenu() {
           onClick={() => setSelectedCategory(null)}
           className={cn(
             "rounded-full h-10 px-6 text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
-            selectedCategory === null ? "bg-slate-950 text-white shadow-lg shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-slate-100"
+            selectedCategory === null ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted"
           )}
         >
           All Menu
@@ -111,7 +111,7 @@ export default function CustomerMenu() {
             onClick={() => setSelectedCategory(category)}
             className={cn(
               "rounded-full h-10 px-6 text-[11px] font-black uppercase tracking-widest transition-all shrink-0",
-              selectedCategory === category ? "bg-slate-950 text-white shadow-lg shadow-slate-950/20" : "text-slate-400 hover:text-slate-950 hover:bg-slate-100"
+              selectedCategory === category ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             {category}
@@ -121,13 +121,13 @@ export default function CustomerMenu() {
 
       {displayedCategories.length > 0 ? displayedCategories.map(category => (
         <div key={category} className="space-y-6">
-          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">{category}</h2>
+          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{category}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.filter(p => p.category === category).map(product => (
               <motion.div key={product.id} whileHover={product.available ? { y: -4 } : {}}>
                 <Card 
                   className={cn(
-                    "overflow-hidden border border-slate-200 shadow-sm bg-white group cursor-pointer transition-all",
+                    "overflow-hidden border border-border shadow-sm bg-card group cursor-pointer transition-all",
                     !product.available && "opacity-60 cursor-not-allowed filter grayscale-[0.5]"
                   )} 
                   onClick={() => {
@@ -138,7 +138,7 @@ export default function CustomerMenu() {
                     }
                   }}
                 >
-                  <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                     <img 
                       src={product.imageUrl || `https://picsum.photos/seed/${product.name}/400/300`} 
                       alt={product.name} 
@@ -149,7 +149,7 @@ export default function CustomerMenu() {
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute top-3 right-3 text-right">
-                      <Badge className="bg-white/90 backdrop-blur text-slate-900 border-none px-3 font-bold block mb-1">
+                      <Badge className="bg-background/90 backdrop-blur text-foreground border-none px-3 font-bold block mb-1">
                         ₱{product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </Badge>
                       {!product.available && (
@@ -160,8 +160,8 @@ export default function CustomerMenu() {
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <CardTitle className="text-base font-bold text-slate-900">{product.name}</CardTitle>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{product.category}</p>
+                    <CardTitle className="text-base font-bold text-foreground">{product.name}</CardTitle>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1">{product.category}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -170,18 +170,18 @@ export default function CustomerMenu() {
         </div>
       )) : (
         <div className="py-20 text-center space-y-4">
-          <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-20 h-20 bg-muted text-muted-foreground rounded-full flex items-center justify-center mx-auto">
             <Search size={40} />
           </div>
-          <h2 className="font-serif text-2xl font-bold text-slate-900">No items found</h2>
-          <p className="text-slate-500">We couldn't find anything matching "{searchTerm}".</p>
+          <h2 className="font-serif text-2xl font-bold text-foreground">No items found</h2>
+          <p className="text-muted-foreground">We couldn't find anything matching "{searchTerm}".</p>
           <Button variant="outline" onClick={() => setSearchTerm('')} className="rounded-xl">Clear Search</Button>
         </div>
       )}
 
       {/* Customization Dialog */}
       <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="bg-white border-none sm:max-w-[500px] p-0 overflow-hidden rounded-3xl">
+        <DialogContent className="bg-card border-none sm:max-w-[500px] p-0 overflow-hidden rounded-3xl">
           {selectedProduct && (
               <div className="flex flex-col max-h-[85vh]">
                 <div className="aspect-video relative overflow-hidden shrink-0">
@@ -202,7 +202,7 @@ export default function CustomerMenu() {
 
                 <div className="p-8 pb-0 overflow-y-auto">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
                        <Settings size={14} />
                       <span className="text-[10px] font-black uppercase tracking-[0.2em]">Personalize</span>
                     </div>
@@ -224,8 +224,8 @@ export default function CustomerMenu() {
                             }}
                             className={cn(
                               "flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-200 text-left",
-                              !isAvailable ? "opacity-40 cursor-not-allowed border-slate-100" :
-                              isSelected ? "border-slate-950 bg-slate-950 text-white shadow-md shadow-slate-950/20" : "border-slate-100 bg-slate-50/50 hover:border-slate-200"
+                              !isAvailable ? "opacity-40 cursor-not-allowed border-border" :
+                              isSelected ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20" : "border-border bg-muted/30 hover:border-border/80"
                             )}
                           >
                             <div>
@@ -234,7 +234,7 @@ export default function CustomerMenu() {
                             </div>
                             <span className={cn(
                               "text-xs font-black px-2 py-1 rounded-lg",
-                              isSelected ? "bg-white/20" : "bg-white text-slate-400"
+                              isSelected ? "bg-primary-foreground/20" : "bg-primary text-primary-foreground"
                             )}>
                               +₱{option.additionalPrice.toFixed(2)}
                             </span>
@@ -249,7 +249,7 @@ export default function CustomerMenu() {
                   <Button 
                     className={cn(
                       "w-full h-14 rounded-2xl text-lg font-bold flex items-center justify-center gap-3 transition-all",
-                      selectedProduct.available ? "bg-slate-950 hover:bg-slate-800 text-white" : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      selectedProduct.available ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"
                     )}
                     disabled={!selectedProduct.available}
                     onClick={handleAddToCart}

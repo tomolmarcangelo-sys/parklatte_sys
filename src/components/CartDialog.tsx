@@ -66,12 +66,12 @@ export default function CartDialog() {
             className="fixed bottom-10 right-10 z-40"
           >
             <Button 
-              className="h-16 w-16 rounded-full shadow-2xl bg-slate-950 hover:bg-slate-800 text-white flex items-center justify-center p-0 transition-transform active:scale-95"
+              className="h-16 w-16 rounded-full shadow-2xl bg-slate-950 hover:bg-slate-800 text-white flex items-center justify-center p-0 transition-transform active:scale-95 border-2 border-slate-950 dark:border-white/20"
               onClick={() => setShowCart(true)}
             >
               <div className="relative">
                 <ShoppingBag size={28} />
-                <span className="absolute -top-3 -right-3 bg-orange-400 text-slate-950 rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-black border-2 border-slate-50">
+                <span className="absolute -top-3 -right-3 bg-orange-400 text-slate-950 rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-black border-2 border-background">
                   {items.length}
                 </span>
               </div>
@@ -81,7 +81,7 @@ export default function CartDialog() {
       </AnimatePresence>
 
       <Dialog open={showCart} onOpenChange={setShowCart}>
-        <DialogContent className="max-w-md bg-white border-none p-0 overflow-hidden rounded-[2.5rem] shadow-premium">
+        <DialogContent className="max-w-md bg-card border-none p-0 overflow-hidden rounded-[2.5rem] shadow-premium">
           <DialogHeader className="p-10 bg-slate-950 text-white space-y-2">
             <DialogTitle className="text-4xl font-black italic tracking-tighter">TACTICAL LOADOUT</DialogTitle>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Configuration for high-performance extraction</p>
@@ -90,32 +90,32 @@ export default function CartDialog() {
           <div className="p-10 pb-4 space-y-5 max-h-[45vh] overflow-y-auto custom-scrollbar">
             {items.length === 0 ? (
               <div className="py-20 text-center space-y-4">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
+                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
                   <ShoppingBag size={40} />
                 </div>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No assets deployed in current loadout</p>
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">No assets deployed in current loadout</p>
               </div>
             ) : items.map(item => (
-              <div key={item.id} className="group p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 relative">
+              <div key={item.id} className="group p-5 rounded-[1.5rem] bg-muted/30 border border-border transition-all hover:bg-muted/50 hover:shadow-xl hover:shadow-background relative">
                 <div className="flex justify-between items-start pr-10">
                   <div className="space-y-2">
-                    <p className="font-black text-slate-950 uppercase tracking-tight italic text-base leading-none">{item.name}</p>
+                    <p className="font-black text-foreground uppercase tracking-tight italic text-base leading-none">{item.name}</p>
                     {item.customizations.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {item.customizations.map((c, idx) => (
-                          <span key={idx} className="text-[9px] font-black uppercase text-orange-400 bg-orange-50 px-2 py-0.5 rounded-md">
+                          <span key={idx} className="text-[9px] font-black uppercase text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-md">
                             + {c.name}
                           </span>
                         ))}
                       </div>
                     )}
                   </div>
-                  <p className="font-black text-slate-950 text-base italic">₱{item.price.toFixed(2)}</p>
+                  <p className="font-black text-foreground text-base italic">₱{item.price.toFixed(2)}</p>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="absolute top-5 right-5 h-8 w-8 rounded-xl bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-500 border border-slate-100"
+                  className="absolute top-5 right-5 h-8 w-8 rounded-xl bg-card shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/10 hover:text-destructive border border-border"
                   onClick={() => removeItem(item.id)}
                 >
                   <Minus size={14} />
@@ -125,23 +125,23 @@ export default function CartDialog() {
           </div>
 
           <div className="p-10 pt-4 space-y-8">
-            <div className="flex justify-between items-end border-t border-slate-100 pt-8">
+            <div className="flex justify-between items-end border-t border-border pt-8">
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 leading-none">Global Deployment Cost</span>
-                <p className="text-5xl font-black text-slate-950 italic tracking-tighter">₱{total.toFixed(2)}</p>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground leading-none">Global Deployment Cost</span>
+                <p className="text-5xl font-black text-foreground italic tracking-tighter">₱{total.toFixed(2)}</p>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={clearCart}
-                className="text-slate-300 hover:text-red-500 text-[10px] font-black uppercase tracking-widest h-10 px-4 rounded-xl"
+                className="text-muted-foreground hover:text-destructive text-[10px] font-black uppercase tracking-widest h-10 px-4 rounded-xl"
               >
                 Clear Loadout
               </Button>
             </div>
             
             <Button 
-              className="w-full h-16 bg-slate-950 hover:bg-slate-800 text-white rounded-[1.25rem] text-xl font-black italic tracking-tighter uppercase flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-slate-950/30"
+              className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[1.25rem] text-xl font-black italic tracking-tighter uppercase flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-primary/30"
               disabled={isOrdering || items.length === 0}
               onClick={placeOrder}
             >

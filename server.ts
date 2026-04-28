@@ -50,7 +50,8 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // Authentication Middleware
   const authenticateToken = (req: any, res: any, next: any) => {
@@ -100,10 +101,10 @@ async function startServer() {
     try {
       const [rows]: any = await pool.execute("SELECT * FROM users WHERE email = ?", [email]);
       const user = rows[0];
-      if (!user) return res.status(400).json({ error: "User not found" });
+      if (!user) return res.status(401).json({ error: "Invalid email or password" });
 
       const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) return res.status(400).json({ error: "Invalid password" });
+      if (!validPassword) return res.status(401).json({ error: "Invalid email or password" });
 
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
       res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
@@ -157,11 +158,79 @@ async function startServer() {
     }
   });
 
+  app.patch("/api/auth/profile", authenticateToken, async (req: any, res) => {
+    const { name, role } = req.body;
+    const userId = req.user.id;
+
+    try {
+      // Input validation
+      if (name && typeof name !== 'string') return res.status(400).json({ error: "Invalid name format" });
+      
+      // Role update restriction: Only admins can change roles
+      if (role && req.user.role !== 'Admin') {
+        return res.status(403).json({ error: "Only administrators can update roles" });
+      }
+
+      const updates: string[] = [];
+      const values: any[] = [];
+
+      if (name) {
+        updates.push("name = ?");
+        values.push(name);
+      }
+
+      if (role) {
+        updates.push("role = ?");
+        values.push(role);
+      }
+
+      if (updates.length === 0) {
+        return res.status(400).json({ error: "No fields to update" });
+      }
+
+      values.push(userId);
+      await pool.execute(
+        `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
+        values
+      );
+
+      const [rows]: any = await pool.execute("SELECT id, name, email, role FROM users WHERE id = ?", [userId]);
+      const updatedUser = rows[0];
+
+      // Generate new token if role changed to keep client state in sync
+      const token = jwt.sign({ id: updatedUser.id, email: updatedUser.email, role: updatedUser.role }, JWT_SECRET);
+      
+      res.json({ user: updatedUser, token });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Menu Routes
   app.get("/api/menu", async (req, res) => {
     try {
-      const [rows] = await pool.execute("SELECT * FROM menu_items");
-      res.json(rows);
+      const [rows]: any = await pool.execute("SELECT * FROM menu_items");
+      // Convert blobs to local URLs or just let the client handle it via a route
+      const items = rows.map((item: any) => ({
+        ...item,
+        imageUrl: item.imageUrl ? `/api/menu/image/${item.id}` : null
+      }));
+      res.json(items);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/menu/image/:id", async (req, res) => {
+    try {
+      const [rows]: any = await pool.execute("SELECT imageUrl FROM menu_items WHERE id = ?", [req.params.id]);
+      if (rows[0] && rows[0].imageUrl) {
+        // We assume it's an image. In a real app, you'd store the MIME type too.
+        res.set('Content-Type', 'image/jpeg');
+        res.send(rows[0].imageUrl);
+      } else {
+        res.status(404).json({ error: "Image not found" });
+      }
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -264,16 +333,23 @@ async function startServer() {
 
   // Admin Menu Management
   app.post("/api/admin/menu", authenticateToken, isAdmin, async (req, res) => {
-    const { name, price, category, imageUrl, available } = req.body;
+    const { name, price, category, imageData, available } = req.body;
     try {
       const id = uuidv4();
+      let imageBuffer = null;
+      
+      if (imageData && imageData.includes('base64,')) {
+        imageBuffer = Buffer.from(imageData.split(',')[1], 'base64');
+      }
+
       await pool.execute(
         "INSERT INTO menu_items (id, name, price, category, imageUrl, available) VALUES (?, ?, ?, ?, ?, ?)",
-        [id, name, price, category, imageUrl || null, available ?? true]
+        [id, name, price, category, imageBuffer, available ?? true]
       );
       io.emit('menu-updated');
-      res.status(201).json({ id, name, price, category, imageUrl, available });
+      res.status(201).json({ id, name, price, category, imageUrl: imageBuffer ? `/api/menu/image/${id}` : null, available });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Failed to add item" });
     }
   });
