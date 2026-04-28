@@ -76,14 +76,18 @@ async function startServer() {
   app.post("/api/auth/register", async (req, res) => {
     const { name, email, password } = req.body;
     try {
+      // Check if this is the first user
+      const [userCount]: any = await pool.execute("SELECT COUNT(*) as count FROM users");
+      const role = userCount[0].count === 0 ? "Admin" : "Customer";
+
       const hashedPassword = await bcrypt.hash(password, 10);
-      const id = Date.now().toString(); // Simple ID generation
+      const id = Date.now().toString();
       await pool.execute(
         "INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)",
-        [id, name, email, hashedPassword, "Customer"]
+        [id, name, email, hashedPassword, role]
       );
-      const token = jwt.sign({ id, email, role: "Customer" }, JWT_SECRET);
-      res.json({ token, user: { id, name, email, role: "Customer" } });
+      const token = jwt.sign({ id, email, role: role }, JWT_SECRET);
+      res.json({ token, user: { id, name, email, role: role } });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
